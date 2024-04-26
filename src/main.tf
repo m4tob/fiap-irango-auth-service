@@ -1,7 +1,7 @@
 terraform {
-  required_version = "~> 1.7.4"
+  required_version = ">= 1.7.4, <= 1.8.1"
 
-  backend "local" { path = "../../tfstate/fiap-irango-database.tfstate" }
+  backend "local" { path = "../../tfstate/fiap-irango-auth-service.tfstate" }
 
   required_providers {
     aws = {
@@ -18,4 +18,9 @@ provider "aws" {
 data "terraform_remote_state" "infra" {
   backend = "local"
   config = { path = "../../tfstate/fiap-irango-infra.tfstate" }
+}
+
+data "terraform_remote_state" "database" {
+  backend = "local"
+  config = { path = "../../tfstate/fiap-irango-database.tfstate" }
 }

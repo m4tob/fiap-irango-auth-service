@@ -1,7 +1,7 @@
 #!/bin/bash
 
 init:
-	terraform -chdir=src init
+	terraform -chdir=src init  -migrate-state
 
 plan:
 	terraform -chdir=src plan
