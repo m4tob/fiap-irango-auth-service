@@ -12,15 +12,15 @@ terraform {
 }
 
 provider "aws" {
-  region  = data.terraform_remote_state.infra.outputs.region
+  region = data.terraform_remote_state.infra.outputs.region
 }
 
 data "terraform_remote_state" "infra" {
   backend = "local"
-  config = { path = "../../tfstate/fiap-irango-infra.tfstate" }
+  config  = { path = "../../tfstate/fiap-irango-infra.tfstate" }
 }
 
 data "terraform_remote_state" "database" {
   backend = "local"
-  config = { path = "../../tfstate/fiap-irango-database.tfstate" }
+  config  = { path = "../../tfstate/fiap-irango-database.tfstate" }
 }

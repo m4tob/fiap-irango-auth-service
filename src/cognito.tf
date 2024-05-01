@@ -7,7 +7,7 @@
 #   identity_pool_name               = "identity pool"
 #   allow_unauthenticated_identities = false
 #   allow_classic_flow               = false
-    
+
 
 #   cognito_identity_providers {
 #     # client_id               = "${var.client_id}"
@@ -19,17 +19,17 @@
 #   saml_provider_arns           = [aws_iam_saml_provider.default.arn]
 # }
 
-resource "aws_cognito_user_pool" "user_pool" {
-  name = "user-pool"
+resource "aws_cognito_user_pool" "default" {
+  name = "${data.terraform_remote_state.infra.outputs.resource_prefix}-cognito-user-pool"
 
-  username_attributes = ["email"]
+  username_attributes      = ["email"]
   auto_verified_attributes = ["email"]
 
   username_configuration {
     case_sensitive = false
   }
 
- password_policy {
+  password_policy {
     minimum_length    = 11
     require_lowercase = false
     require_numbers   = false
@@ -37,7 +37,7 @@ resource "aws_cognito_user_pool" "user_pool" {
     require_symbols   = false
   }
 
-schema {
+  schema {
     attribute_data_type      = "String"
     developer_only_attribute = false
     mutable                  = true
@@ -50,7 +50,7 @@ schema {
     }
   }
 
- schema {
+  schema {
     attribute_data_type      = "String"
     developer_only_attribute = false
     mutable                  = true
@@ -62,20 +62,22 @@ schema {
       max_length = 11
     }
   }
-  
+
+  tags = {
+    Name = "${data.terraform_remote_state.infra.outputs.resource_prefix}-cognito-user-pool"
+  }
 }
 
-resource "aws_cognito_user_pool_client" "client" {
-  name = "cognito-client"
+resource "aws_cognito_user_pool_client" "default" {
+  name = "${data.terraform_remote_state.infra.outputs.resource_prefix}-cognito-user-pool-client"
 
-  user_pool_id = aws_cognito_user_pool.user_pool.id
-  generate_secret = false
-  refresh_token_validity = 90
+  user_pool_id                  = aws_cognito_user_pool.default.id
+  generate_secret               = false
+  refresh_token_validity        = 90
   prevent_user_existence_errors = "ENABLED"
   explicit_auth_flows = [
     "ALLOW_REFRESH_TOKEN_AUTH",
     "ALLOW_USER_PASSWORD_AUTH",
     "ALLOW_ADMIN_USER_PASSWORD_AUTH"
   ]
-  
 }
