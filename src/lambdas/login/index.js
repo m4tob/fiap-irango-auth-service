@@ -1,18 +1,18 @@
 
-const pg = require('pg');
+const mysql = require('mysql2/promise');
 const { cpf: cpfValidator } = require('cpf-cnpj-validator');
 const { CognitoUserPool, CognitoUser, AuthenticationDetails } = require('amazon-cognito-identity-js');
-const { Client } = pg;
 
 function signUp({ cpf, userPool }) {
- return new Promise((resolve, reject) => {  userPool.signUp(cpf, cpf, [], null, (err, result) => {
+  return new Promise((resolve, reject) => {
+    userPool.signUp(cpf, cpf, [], null, (err, result) => {
 
-    if (!result) {
-      return reject(err);
-    }
-    return resolve(result.user)
-  });
- })
+      if (!result) {
+        return reject(err);
+      }
+      return resolve(result.user)
+    });
+  })
 }
 
 function authenticateUser({ cpf, userPool }) {
@@ -20,14 +20,14 @@ function authenticateUser({ cpf, userPool }) {
   const userData = {
     Username: cpf,
     Pool: userPool,
-    }
+  }
   const authenticationDetails = new AuthenticationDetails({
     Username: cpf,
     Password: cpf
   })
   const userCognito = new CognitoUser(userData)
 
-  return new Promise((resolve, reject) => {  
+  return new Promise((resolve, reject) => {
     userCognito.authenticateUser(authenticationDetails, {
       onSuccess: (result) => {
         resolve(result)
@@ -39,10 +39,9 @@ function authenticateUser({ cpf, userPool }) {
   })
 }
 
-
 exports.handler = async (event, context) => {
-    console.log("EVENT: \n" + JSON.stringify(event, null, 2));
-    console.log("EVENT: \n" + JSON.stringify(process.env, null, 2));
+  console.log("EVENT: \n" + JSON.stringify(event, null, 2));
+  console.log("EVENT: \n" + JSON.stringify(process.env, null, 2));
 
   try {
 
@@ -50,50 +49,46 @@ exports.handler = async (event, context) => {
     const cpf = queryParams && queryParams.cpf ? queryParams.cpf : undefined;
 
     if (!cpf) {
-        return 402;
+      console.log("CPF não informado");
+      return 402;
     }
 
     const cpfClear = cpf.replace(/\D/g, '');
 
     if (!cpfValidator.isValid(cpfClear)) {
-        return 402;
+      console.log("CPF inválido");
+      return 402;
     }
 
-    const client = new Client({
-      host: process.env.PGHOST.split(':')[0],
-      port: process.env.PGPORT,
-      user: process.env.PGUSER,
-      password: process.env.PGPASSWORD,
-    })
-    
-    await client.connect()
+    const connection = await mysql.createConnection({
+      host: process.env.DB_HOSTNAME,
+      port: process.env.DB_PORT,
+      database: process.env.DB_DATABASE,
+      user: process.env.DB_USERNAME,
+      password: process.env.DB_PASSWORD,
+    });
 
-    console.log("EVENT: \n" + JSON.stringify(client, null, 2));
+    const [rows, fields] = await connection.execute(
+      'SELECT * FROM `Consumidor` WHERE `cpf` = ?',
+      [cpf]
+    );
 
-    const query = {
-        name: 'fetch-consumidor',
-        text: 'SELECT * FROM Consumidor where cpf = $1',
-        values: [cpf],
+    console.log("EVENT: \n" + JSON.stringify(rows, null, 2));
+
+    if (!rows[0]) {
+      return 401
     }
-
-    const res = await client.query(query);
-    
-    if (!res.rows[0]) {
-        return 401
-    }
-
-    console.log("EVENT: \n" + JSON.stringify(res, null, 2));
 
     const userPool = new CognitoUserPool({
       UserPoolId: process.env.USER_POOL_ID,
       ClientId: process.env.CLIENT_ID,
     })
 
-    const tt = await signUp({cpf, userPool})
+    const tt = await signUp({ cpf, userPool })
     console.log(tt)
 
-    const result =  await authenticateUser({
-        cpf, userPool
+    const result = await authenticateUser({
+      cpf, userPool
     })
 
     console.log(result)
@@ -101,7 +96,7 @@ exports.handler = async (event, context) => {
       status: 200,
       body: 'hello world!'
     }
-      
+
   } catch (error) {
     console.log(error)
 

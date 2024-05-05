@@ -40,29 +40,34 @@ resource "aws_iam_role" "lambda" {
 }
 
 resource "aws_cloudwatch_log_group" "lambda_log_group" {
-  name              = "/aws/lambda/${var.lambda_name}"
-  
+  name = "${data.terraform_remote_state.infra.outputs.resource_prefix}-lambda-login"
+
   retention_in_days = 1
   lifecycle {
     prevent_destroy = false
   }
 }
 
-data "archive_file" "login_artefact" {
+resource "aws_iam_role_policy_attachment" "AWSLambdaVPCAccessExecutionRole" {
+  role       = aws_iam_role.lambda.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
+}
+
+data "archive_file" "lambda_login_artefact" {
   type        = "zip"
   source_dir  = "${path.module}/lambdas/login"
   output_path = "files/login_lambda_function_payload.zip"
 }
 
-resource "aws_lambda_function" "login_lambda" {
+resource "aws_lambda_function" "login" {
+  function_name    = "${data.terraform_remote_state.infra.outputs.resource_prefix}-lambda-login"
   filename         = "files/login_lambda_function_payload.zip"
-  function_name    = var.lambda_name
   role             = aws_iam_role.lambda.arn
   handler          = "index.handler"
-  timeout          = 15
+  timeout          = 5
   memory_size      = 128
-  source_code_hash = data.archive_file.login_artefact.output_base64sha256
-  depends_on       = [
+  source_code_hash = data.archive_file.lambda_login_artefact.output_base64sha256
+  depends_on = [
     aws_cloudwatch_log_group.lambda_log_group,
   ]
 
@@ -73,16 +78,16 @@ resource "aws_lambda_function" "login_lambda" {
       data.terraform_remote_state.infra.outputs.subnet_private_a_id,
       data.terraform_remote_state.infra.outputs.subnet_private_b_id
     ]
-    security_group_ids = [ aws_security_group.lambda.id ]
+    security_group_ids = [aws_security_group.lambda.id]
   }
 
   environment {
     variables = {
-      PGHOST     = "${data.terraform_remote_state.database.outputs.aws_db_instance_host}",
-      PGPORT     = 3306,
-      PGDATABASE = "${data.terraform_remote_state.database.outputs.db_name}",
-      PGUSER     = "${var.db_user}",
-      PGPASSWORD = "${var.db_password}",
+      DB_HOSTNAME = "${split(":", data.terraform_remote_state.database.outputs.aws_db_instance_endpoint)[0]}",
+      DB_PORT     = split(":", data.terraform_remote_state.database.outputs.aws_db_instance_endpoint)[1],
+      DB_DATABASE = "${data.terraform_remote_state.database.outputs.db_name}",
+      DB_USERNAME = "${var.db_user}",
+      DB_PASSWORD = "${var.db_password}",
     }
   }
 
