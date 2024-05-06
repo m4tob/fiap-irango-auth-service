@@ -81,3 +81,19 @@ resource "aws_cognito_user_pool_client" "default" {
     "ALLOW_ADMIN_USER_PASSWORD_AUTH"
   ]
 }
+
+
+output "user_pool_id" {
+  value = "${aws_cognito_user_pool.default.id}"
+}
+
+
+
+output "client_id" {
+  value = "${aws_cognito_user_pool_client.default.id}"
+}
+
+
+
+
+
