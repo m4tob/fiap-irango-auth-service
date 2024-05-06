@@ -1,7 +1,11 @@
 terraform {
   required_version = ">= 1.7.4, <= 1.8.1"
 
-  backend "local" { path = "../../tfstate/fiap-irango-auth-service.tfstate" }
+  backend "s3" {
+    bucket = "fiap-irango-tfstate"
+    key    = "fiap-irango-auth-service.tfstate"
+    region = "us-east-1"
+  }
 
   required_providers {
     aws = {
@@ -23,11 +27,19 @@ provider "aws" {
 }
 
 data "terraform_remote_state" "infra" {
-  backend = "local"
-  config  = { path = "../../tfstate/fiap-irango-infra.tfstate" }
+  backend = "s3"
+  config = {
+    bucket = "fiap-irango-tfstate"
+    key    = "fiap-irango-infra.tfstate"
+    region = "us-east-1"
+  }
 }
 
 data "terraform_remote_state" "database" {
-  backend = "local"
-  config  = { path = "../../tfstate/fiap-irango-database.tfstate" }
+  backend = "s3"
+  config = {
+    bucket = "fiap-irango-tfstate"
+    key    = "fiap-irango-database.tfstate"
+    region = "us-east-1"
+  }
 }
