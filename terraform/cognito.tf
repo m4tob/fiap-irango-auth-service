@@ -84,6 +84,7 @@ resource "aws_cognito_user_pool_client" "default" {
 
 
 output "user_pool_id" {
+<<<<<<< HEAD:src/cognito.tf
   value = "${aws_cognito_user_pool.default.id}"
 }
 
@@ -95,3 +96,13 @@ output "client_id" {
 
 
 
+=======
+  value = aws_cognito_user_pool.default.id
+}
+
+
+
+output "client_id" {
+  value = aws_cognito_user_pool_client.default.id
+}
+>>>>>>> a1e2cfb7e44dd32dfa0b67ed05e68d95e01efb18:terraform/cognito.tf

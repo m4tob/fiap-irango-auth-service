@@ -18,6 +18,8 @@ Before all, you need set AWS credentials ENVs using:
 ```bash
 export AWS_ACCESS_KEY_ID=xxxxxx
 export AWS_SECRET_ACCESS_KEY=xxxxxx
+export TF_VAR_db_user=root
+export TF_VAR_db_password=password
 ```
 Or configure it in windows environments.
 
@@ -42,17 +44,16 @@ make down
 ### Without make
 ```bash
 # To init terraform
-terraform -chdir=src init
+terraform -chdir=terraform init
 
 # To run terraform plan
-terraform -chdir=src plan
+terraform -chdir=terraform plan
 
 # To apply changes
-terraform -chdir=src apply
+terraform -chdir=terraform apply
 ```
 
 To destroy resources:
 ```bash
-terraform -chdir=src destroy
+terraform -chdir=terraform destroy
 ```
-
