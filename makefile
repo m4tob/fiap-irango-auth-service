@@ -1,13 +1,13 @@
 #!/bin/bash
 
 init:
-	terraform -chdir=src init  -migrate-state
+	terraform -chdir=terraform init  -migrate-state
 
 plan:
-	terraform -chdir=src plan
+	terraform -chdir=terraform plan
 
 up:
-	terraform -chdir=src apply
+	terraform -chdir=terraform apply
 
 down:
-	terraform -chdir=src destroy
+	terraform -chdir=terraform destroy

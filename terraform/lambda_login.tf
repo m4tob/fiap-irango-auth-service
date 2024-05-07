@@ -58,7 +58,7 @@ resource "aws_iam_role_policy_attachment" "AWSLambdaVPCAccessExecutionRole" {
 
 data "archive_file" "lambda_login_artefact" {
   type        = "zip"
-  source_dir  = "${path.module}/lambdas/login"
+  source_dir  = "${path.module}/../src/lambdas/login"
   output_path = "files/login_lambda_function_payload.zip"
 }
 
@@ -72,7 +72,7 @@ resource "aws_lambda_function" "login" {
   memory_size      = 128
   source_code_hash = data.archive_file.lambda_login_artefact.output_base64sha256
   depends_on = [
-    aws_cloudwatch_log_group.lambda_log_group,
+    aws_cloudwatch_log_group.lambda_log_group #,
     # aws_cognito_user_pool.default,
     # aws_cognito_user_pool_client.default
   ]
@@ -93,7 +93,7 @@ resource "aws_lambda_function" "login" {
       DB_PORT     = split(":", data.terraform_remote_state.database.outputs.aws_db_instance_endpoint)[1],
       DB_DATABASE = "${data.terraform_remote_state.database.outputs.db_name}",
       DB_USERNAME = "${var.db_user}",
-      DB_PASSWORD = "${var.db_password}",
+      DB_PASSWORD = "${var.db_password}" #,
       # USER_POOL_ID = "${aws_cognito_user_pool.default.id}",
       # CLIENT_ID = "${aws_cognito_user_pool_client.id}",
     }
@@ -103,7 +103,6 @@ resource "aws_lambda_function" "login" {
     Name = "${data.terraform_remote_state.infra.outputs.resource_prefix}-lambda"
   }
 }
-
 
 # Integre a função Lambda ao método da API Gateway
 resource "aws_api_gateway_integration" "lambda" {
@@ -115,7 +114,6 @@ resource "aws_api_gateway_integration" "lambda" {
   type                    = "AWS"
   uri                     = aws_lambda_function.login.invoke_arn
 }
-
 
 resource "aws_api_gateway_method_response" "proxy" {
   rest_api_id = aws_api_gateway_rest_api.default.id
@@ -155,7 +153,6 @@ resource "aws_api_gateway_deployment" "deployment" {
   rest_api_id = aws_api_gateway_rest_api.default.id
   stage_name  = "dev"
 }
-
 
 # resource "aws_iam_role_policy_attachment" "lambda_basic" {
 #   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"

@@ -1,4 +1,4 @@
-/src/.terraform
-/src/.terraform.lock.hcl
+/terraform/.terraform
+/terraform/.terraform.lock.hcl
+/terraform/**/files/
 /src/**/node_modules/
-/src/**/files/
