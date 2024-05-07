@@ -94,7 +94,7 @@ resource "aws_lambda_function" "login" {
       DB_DATABASE = "${data.terraform_remote_state.database.outputs.db_name}",
       DB_USERNAME = "${var.db_user}",
       DB_PASSWORD = "${var.db_password}" #,
-    USER_POOL_ID = "${aws_cognito_user_pool.default.id}",
+      USER_POOL_ID = "${aws_cognito_user_pool.default.id}",
       CLIENT_ID = "${aws_cognito_user_pool_client.default.id}",
     }
   }
@@ -106,9 +106,9 @@ resource "aws_lambda_function" "login" {
 
 # Integre a função Lambda ao método da API Gateway
 resource "aws_api_gateway_integration" "lambda" {
-  rest_api_id             = data.terraform_remote_state.infra.outputs.gateway_id
-  resource_id             = data.terraform_remote_state.infra.outputs.gateway_resource_id
-  http_method             = data.terraform_remote_state.infra.outputs.gateway_http_method
+  rest_api_id = aws_api_gateway_rest_api.default.id
+  resource_id = aws_api_gateway_resource.default.id
+  http_method = aws_api_gateway_method.default.http_method
   
   integration_http_method = "GET"
   type                    = "AWS_PROXY"
