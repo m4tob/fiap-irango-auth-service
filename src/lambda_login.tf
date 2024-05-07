@@ -53,6 +53,8 @@ resource "aws_cloudwatch_log_group" "lambda_log_group" {
 
 resource "aws_iam_role_policy_attachment" "AWSLambdaVPCAccessExecutionRole" {
   role       = aws_iam_role.lambda.name
+  #  role             = "arn:aws:iam::364764462991:role/LabRole"
+
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
 }
 
@@ -73,8 +75,8 @@ resource "aws_lambda_function" "login" {
   source_code_hash = data.archive_file.lambda_login_artefact.output_base64sha256
   depends_on = [
     aws_cloudwatch_log_group.lambda_log_group,
-    # aws_cognito_user_pool.default,
-    # aws_cognito_user_pool_client.default
+    aws_cognito_user_pool.default,
+    aws_cognito_user_pool_client.default
   ]
 
   runtime = var.lambda_login_runtime
@@ -94,8 +96,8 @@ resource "aws_lambda_function" "login" {
       DB_DATABASE = "${data.terraform_remote_state.database.outputs.db_name}",
       DB_USERNAME = "${var.db_user}",
       DB_PASSWORD = "${var.db_password}",
-      # USER_POOL_ID = "${aws_cognito_user_pool.default.id}",
-      # CLIENT_ID = "${aws_cognito_user_pool_client.id}",
+      USER_POOL_ID = "${aws_cognito_user_pool.default.id}",
+      CLIENT_ID = "${aws_cognito_user_pool_client.default.id}",
     }
   }
 
@@ -112,7 +114,7 @@ resource "aws_api_gateway_integration" "lambda" {
   http_method             = data.terraform_remote_state.infra.outputs.gateway_http_method
   
   integration_http_method = "GET"
-  type                    = "AWS"
+  type                    = "AWS_PROXY"
   uri                     = "${aws_lambda_function.login.invoke_arn}"
 }
 

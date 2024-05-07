@@ -14,3 +14,8 @@ variable "db_user" {
 variable "db_password" {
   type = string
 }
+
+
+variable "bucket_state" {
+  default= "fiap-irango-tfstate2"
+}
