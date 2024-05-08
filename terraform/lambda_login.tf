@@ -43,17 +43,19 @@ resource "aws_iam_role" "lambda" {
 }
 
 resource "aws_cloudwatch_log_group" "lambda_log_group" {
-  name = "${data.terraform_remote_state.infra.outputs.resource_prefix}-lambda-login"
+  name = "/aws/lambda/${aws_lambda_function.login.function_name}"
 
   retention_in_days = 1
-  lifecycle {
-    prevent_destroy = false
-  }
 }
 
 resource "aws_iam_role_policy_attachment" "AWSLambdaVPCAccessExecutionRole" {
   role       = aws_iam_role.lambda.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
+}
+
+resource "aws_iam_role_policy_attachment" "AWSLambdaBasicExecutionRole" {
+  role       = aws_iam_role.lambda.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 
 data "archive_file" "lambda_login_artefact" {
@@ -72,7 +74,6 @@ resource "aws_lambda_function" "login" {
   memory_size      = 128
   source_code_hash = data.archive_file.lambda_login_artefact.output_base64sha256
   depends_on = [
-    aws_cloudwatch_log_group.lambda_log_group #,
     # aws_cognito_user_pool.default,
     # aws_cognito_user_pool_client.default
   ]
@@ -102,71 +103,4 @@ resource "aws_lambda_function" "login" {
   tags = {
     Name = "${data.terraform_remote_state.infra.outputs.resource_prefix}-lambda"
   }
-}
-
-# Integre a função Lambda ao método da API Gateway
-resource "aws_api_gateway_integration" "lambda" {
-  rest_api_id = aws_api_gateway_rest_api.default.id
-  resource_id = aws_api_gateway_resource.default.id
-  http_method = aws_api_gateway_method.default.http_method
-
-  integration_http_method = "GET"
-  type                    = "AWS"
-  uri                     = aws_lambda_function.login.invoke_arn
-}
-
-resource "aws_api_gateway_method_response" "proxy" {
-  rest_api_id = aws_api_gateway_rest_api.default.id
-  resource_id = aws_api_gateway_resource.default.id
-  http_method = aws_api_gateway_method.default.http_method
-  status_code = "200"
-
-  response_parameters = {
-    "method.response.header.Access-Control-Allow-Headers" = true,
-    "method.response.header.Access-Control-Allow-Methods" = true,
-    "method.response.header.Access-Control-Allow-Origin"  = true
-  }
-}
-
-resource "aws_api_gateway_integration_response" "proxy" {
-  rest_api_id = aws_api_gateway_rest_api.default.id
-  resource_id = aws_api_gateway_resource.default.id
-  http_method = aws_api_gateway_method.default.http_method
-  status_code = aws_api_gateway_method_response.proxy.status_code
-
-  response_parameters = {
-    "method.response.header.Access-Control-Allow-Headers" = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'",
-    "method.response.header.Access-Control-Allow-Methods" = "'GET,OPTIONS,POST,PUT'",
-    "method.response.header.Access-Control-Allow-Origin"  = "'*'"
-  }
-
-  depends_on = [
-    aws_api_gateway_integration.lambda
-  ]
-}
-
-resource "aws_api_gateway_deployment" "deployment" {
-  depends_on = [
-    aws_api_gateway_integration.lambda,
-  ]
-
-  rest_api_id = aws_api_gateway_rest_api.default.id
-  stage_name  = "dev"
-}
-
-# resource "aws_iam_role_policy_attachment" "lambda_basic" {
-#   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
-# //role = aws_iam_role.lambda_role.name
-#   role = "arn:aws:iam::364764462991:role/LabRole"
-# }
-
-# Conecte o método à função Lambda
-resource "aws_lambda_permission" "fiap-gateway_lambda_permission" {
-  statement_id  = "AllowExecutionFromAPIGateway"
-  action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.login.function_name
-  principal     = "apigateway.amazonaws.com"
-
-  # Substitua "fiap_gateway_id" pelo ID da sua API Gateway
-  source_arn = "${aws_api_gateway_rest_api.default.execution_arn}/*/*/login"
 }
