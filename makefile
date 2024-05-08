@@ -7,7 +7,7 @@ plan:
 	terraform -chdir=terraform plan
 
 up:
-	terraform -chdir=terraform apply
+	terraform -chdir=terraform apply -auto-approve
 
 down:
-	terraform -chdir=terraform destroy
+	terraform -chdir=terraform destroy -auto-approve

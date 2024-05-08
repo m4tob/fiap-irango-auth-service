@@ -1,4 +1,3 @@
-
 const mysql = require('mysql2/promise');
 const { cpf: cpfValidator } = require('cpf-cnpj-validator');
 const { CognitoUserPool, CognitoUser, AuthenticationDetails, CognitoUserAttribute } = require('amazon-cognito-identity-js');
@@ -63,16 +62,16 @@ exports.handler = async (event, context) => {
     if (!cpfValidator.isValid(cpfClear)) {
       console.log("CPF inválido");
       return {
-          statusCode: 402,
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
+        statusCode: 402,
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
           message: "CPF inválido!"
           // Add more data as needed
         })
       }
-   }
+    }
 
     const connection = await mysql.createConnection({
       host: process.env.DB_HOSTNAME,
@@ -91,11 +90,11 @@ exports.handler = async (event, context) => {
 
     if (!rows[0]) {
       return {
-          statusCode: 401,
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
+        statusCode: 401,
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
           message: " inválido!"
         })
       }
@@ -112,7 +111,7 @@ exports.handler = async (event, context) => {
 
     const result = await authenticateUser({
       email,
-      cpf, 
+      cpf,
       userPool
     })
 
@@ -123,16 +122,16 @@ exports.handler = async (event, context) => {
         "Content-Type": "application/json"
       },
       body: JSON.stringify(result)
-  }
+    }
   } catch (error) {
-      console.log(error)
+    console.log(error)
 
-      return {
-        statusCode: 500,
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
+    return {
+      statusCode: 500,
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
         message: error
         // Add more data as needed
       })
