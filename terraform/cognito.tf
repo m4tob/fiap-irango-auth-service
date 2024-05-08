@@ -62,6 +62,7 @@ resource "aws_cognito_user_pool" "default" {
       max_length = 11
     }
   }
+  
 
   tags = {
     Name = "${data.terraform_remote_state.infra.outputs.resource_prefix}-cognito-user-pool"
@@ -79,7 +80,8 @@ resource "aws_cognito_user_pool_client" "default" {
   explicit_auth_flows = [
     "ALLOW_REFRESH_TOKEN_AUTH",
     "ALLOW_USER_PASSWORD_AUTH",
-    "ALLOW_ADMIN_USER_PASSWORD_AUTH"
+    "ALLOW_ADMIN_USER_PASSWORD_AUTH",
+    "ALLOW_USER_SRP_AUTH"
   ]
 }
 
