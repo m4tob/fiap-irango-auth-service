@@ -1,3 +1,4 @@
+
 const mysql = require('mysql2/promise');
 const { cpf: cpfValidator } = require('cpf-cnpj-validator');
 const { CognitoUserPool, CognitoUser, AuthenticationDetails, CognitoUserAttribute } = require('amazon-cognito-identity-js');
@@ -6,7 +7,7 @@ function signUp({ email, cpf, userPool }) {
   return new Promise((resolve, reject) => {
     userPool.signUp(email, cpf, [
       new CognitoUserAttribute({
-        Name: 'cpf', Value: cpf
+        Name: 'custom:cpf', Value: cpf
       })
     ], null, (err, result) => {
 
@@ -30,7 +31,6 @@ function authenticateUser({ email, cpf, userPool }) {
   })
 
   const userCognito = new CognitoUser(userData)
-
   return new Promise((resolve, reject) => {
     userCognito.authenticateUser(authenticationDetails, {
       onSuccess: (result) => {
@@ -52,9 +52,27 @@ exports.handler = async (event, context) => {
     const queryParams = event.queryStringParameters;
     const cpf = queryParams && queryParams.cpf ? queryParams.cpf : undefined;
 
+    const userPool = new CognitoUserPool({
+      UserPoolId: process.env.USER_POOL_ID,
+      ClientId: process.env.CLIENT_ID,
+    })
+
+
     if (!cpf) {
       console.log("CPF não informado");
-      return 402;
+      const result = await authenticateUser({
+        email: process.env.NOT_IDENTIFIED_USERNAME,
+        cpf: process.env.NOT_IDENTIFIED_PASS,
+        userPool
+      })
+
+      return {
+        statusCode: 200,
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(result)
+      }
     }
 
     const cpfClear = cpf.replace(/\D/g, '');
@@ -90,24 +108,37 @@ exports.handler = async (event, context) => {
 
     if (!rows[0]) {
       return {
-        statusCode: 401,
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
+          statusCode: 401,
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
           message: " inválido!"
         })
       }
     }
 
-    const userPool = new CognitoUserPool({
-      UserPoolId: process.env.USER_POOL_ID ?? "us-east-1_dYbzjmeEi",
-      ClientId: process.env.CLIENT_ID ?? "68b14adcd8rj15dnumflkk7mjq",
-    })
+    const email = $row[0]['email'] 
 
-    const email = $row[0]['email']
-    const tt = await signUp({ email, cpf, userPool })
-    console.log(tt)
+    try {
+      const tt = await signUp({ email, cpf, userPool })
+      console.log(tt)
+
+    } catch (error) {
+      console.log(error)
+
+      if (error?.code !== 'UsernameExistsException') {
+        return {
+          statusCode: 401,
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            message: " inválido!"
+          })
+        }
+      }
+    }
 
     const result = await authenticateUser({
       email,
@@ -133,7 +164,6 @@ exports.handler = async (event, context) => {
       },
       body: JSON.stringify({
         message: error
-        // Add more data as needed
       })
     }
   }

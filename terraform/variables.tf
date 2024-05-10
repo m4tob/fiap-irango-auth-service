@@ -6,6 +6,11 @@ variable "lambda_login_runtime" {
   default = "nodejs20.x"
 }
 
+
+variable "lambda_lambda_auto_confirm_user_runtime" {
+  default = "nodejs20.x"
+}
+
 # Secrets
 variable "db_user" {
   type = string
@@ -15,7 +20,19 @@ variable "db_password" {
   type = string
 }
 
-
 variable "bucket_state" {
   default= "fiap-irango-tfstate2"
 }
+
+variable "username_not_identified" {
+  default = "no-reply@fiapirango.com"
+}
+
+variable "password_not_identified" {
+  default = "password_not_identified"
+}
+
+variable "email_not_identified" {
+  default = "no-reply@fiapirango.com"
+}
+

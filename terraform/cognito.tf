@@ -24,11 +24,18 @@ resource "aws_cognito_user_pool" "default" {
 
   username_attributes      = ["email"]
   auto_verified_attributes = ["email"]
-
+  verification_message_template {
+    default_email_option = "CONFIRM_WITH_LINK"
+  }
   username_configuration {
     case_sensitive = false
   }
+  
+  lambda_config {
+    pre_sign_up = "${aws_lambda_function.lambda_auto_confirm_user.arn}"
+  }
 
+  depends_on = [aws_lambda_function.lambda_auto_confirm_user ]
   password_policy {
     minimum_length    = 11
     require_lowercase = false
@@ -86,3 +93,25 @@ resource "aws_cognito_user_pool_client" "default" {
 }
 
 
+resource "aws_lambda_permission" "cognito_trigger" {
+  statement_id  = "AllowExecutionFromCognito"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.lambda_auto_confirm_user.arn
+  principal     = "cognito-idp.amazonaws.com"
+  source_arn    = aws_cognito_user_pool.default.arn
+}
+
+
+resource "aws_cognito_user" "not_identified" {
+  user_pool_id = aws_cognito_user_pool.default.id
+  username = var.username_not_identified
+  password = var.password_not_identified
+
+  depends_on = [ aws_lambda_permission.cognito_trigger ]
+
+  attributes = {
+    cpf            = null
+    email          = var.email_not_identified
+    email_verified = true
+  }
+}

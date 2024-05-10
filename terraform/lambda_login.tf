@@ -50,11 +50,13 @@ resource "aws_cloudwatch_log_group" "lambda_log_group" {
 
 resource "aws_iam_role_policy_attachment" "AWSLambdaVPCAccessExecutionRole" {
   role       = aws_iam_role.lambda.name
+    # role             = "arn:aws:iam::364764462991:role/LabRole"  
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
 }
 
 resource "aws_iam_role_policy_attachment" "AWSLambdaBasicExecutionRole" {
   role       = aws_iam_role.lambda.name
+    # role             = "arn:aws:iam::364764462991:role/LabRole"  
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 
@@ -67,16 +69,16 @@ data "archive_file" "lambda_login_artefact" {
 resource "aws_lambda_function" "login" {
   function_name = "${data.terraform_remote_state.infra.outputs.resource_prefix}-lambda-login"
   filename      = "files/login_lambda_function_payload.zip"
-  role          = aws_iam_role.lambda.arn
-  # role             = "arn:aws:iam::364764462991:role/LabRole"
+  role       = aws_iam_role.lambda.name
+    # role             = "arn:aws:iam::364764462991:role/LabRole"  
   handler          = "index.handler"
-  timeout          = 5
+  timeout          = 15
   memory_size      = 128
   source_code_hash = data.archive_file.lambda_login_artefact.output_base64sha256
   depends_on = [
     aws_cloudwatch_log_group.lambda_log_group,
     aws_cognito_user_pool.default,
-    aws_cognito_user_pool_client.default
+    aws_cognito_user_pool_client.default,
   ]
 
   runtime = var.lambda_login_runtime
@@ -98,6 +100,8 @@ resource "aws_lambda_function" "login" {
       DB_PASSWORD = "${var.db_password}" #,
       USER_POOL_ID = "${aws_cognito_user_pool.default.id}",
       CLIENT_ID = "${aws_cognito_user_pool_client.default.id}",
+      NOT_IDENTIFIED_USERNAME = var.username_not_identified,
+      NOT_IDENTIFIED_PASS = var.password_not_identified,
     }
   }
 
