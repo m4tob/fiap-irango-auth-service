@@ -30,12 +30,12 @@ resource "aws_cognito_user_pool" "default" {
   username_configuration {
     case_sensitive = false
   }
-  
+
   lambda_config {
-    pre_sign_up = "${aws_lambda_function.lambda_auto_confirm_user.arn}"
+    pre_sign_up = aws_lambda_function.confirm_user.arn
   }
 
-  depends_on = [aws_lambda_function.lambda_auto_confirm_user ]
+  depends_on = [aws_lambda_function.confirm_user]
   password_policy {
     minimum_length    = 11
     require_lowercase = false
@@ -69,7 +69,7 @@ resource "aws_cognito_user_pool" "default" {
       max_length = 11
     }
   }
-  
+
 
   tags = {
     Name = "${data.terraform_remote_state.infra.outputs.resource_prefix}-cognito-user-pool"
@@ -83,7 +83,7 @@ resource "aws_cognito_user_pool_client" "default" {
   generate_secret               = false
   refresh_token_validity        = 90
   prevent_user_existence_errors = "ENABLED"
-  
+
   explicit_auth_flows = [
     "ALLOW_REFRESH_TOKEN_AUTH",
     "ALLOW_USER_PASSWORD_AUTH",
@@ -92,22 +92,20 @@ resource "aws_cognito_user_pool_client" "default" {
   ]
 }
 
-
 resource "aws_lambda_permission" "cognito_trigger" {
   statement_id  = "AllowExecutionFromCognito"
   action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.lambda_auto_confirm_user.arn
+  function_name = aws_lambda_function.confirm_user.arn
   principal     = "cognito-idp.amazonaws.com"
   source_arn    = aws_cognito_user_pool.default.arn
 }
 
-
 resource "aws_cognito_user" "not_identified" {
   user_pool_id = aws_cognito_user_pool.default.id
-  username = var.username_not_identified
-  password = var.password_not_identified
+  username     = var.username_not_identified
+  password     = var.password_not_identified
 
-  depends_on = [ aws_lambda_permission.cognito_trigger ]
+  depends_on = [aws_lambda_permission.cognito_trigger]
 
   attributes = {
     cpf            = null

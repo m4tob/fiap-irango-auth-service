@@ -7,7 +7,7 @@ variable "lambda_login_runtime" {
 }
 
 
-variable "lambda_lambda_auto_confirm_user_runtime" {
+variable "lambda_confirm_user_runtime" {
   default = "nodejs20.x"
 }
 
@@ -18,10 +18,6 @@ variable "db_user" {
 
 variable "db_password" {
   type = string
-}
-
-variable "bucket_state" {
-  default= "fiap-irango-tfstate2"
 }
 
 variable "username_not_identified" {
