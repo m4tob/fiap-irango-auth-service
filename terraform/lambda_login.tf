@@ -93,8 +93,8 @@ resource "aws_lambda_function" "login" {
       DB_HOSTNAME = "${split(":", data.terraform_remote_state.database.outputs.aws_db_instance_endpoint)[0]}",
       DB_PORT     = split(":", data.terraform_remote_state.database.outputs.aws_db_instance_endpoint)[1],
       DB_DATABASE = "${data.terraform_remote_state.database.outputs.db_name}",
-      DB_USERNAME = "${var.db_user}",
-      DB_PASSWORD = "${var.db_password}" #,
+      DB_USERNAME = "${var.DB_USERNAME}",
+      DB_PASSWORD = "${var.DB_PASSWORD}" #,
       # USER_POOL_ID = "${aws_cognito_user_pool.default.id}",
       # CLIENT_ID = "${aws_cognito_user_pool_client.id}",
     }

@@ -18,8 +18,8 @@ Before all, you need set AWS credentials ENVs using:
 ```bash
 export AWS_ACCESS_KEY_ID=xxxxxx
 export AWS_SECRET_ACCESS_KEY=xxxxxx
-export TF_VAR_db_user=root
-export TF_VAR_db_password=password
+export TF_VAR_DB_USERNAME=root
+export TF_VAR_DB_PASSWORD=password
 ```
 Or configure it in windows environments.
 
