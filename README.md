@@ -1,7 +1,9 @@
 # Fiap iRango Auth Service
 ![terraform](https://img.shields.io/badge/Terraform-7B42BC?style=for-the-badge&logo=terraform&logoColor=white)
 ![aws](https://img.shields.io/badge/Amazon_AWS-FF9900?style=for-the-badge&logo=amazonaws&logoColor=white)
-
+![cognito](https://img.shields.io/badge/Amazon_Cognito-d5242d?style=for-the-badge&logo=amazoncognito&logoColor=white)
+![lambda](https://img.shields.io/badge/AWS_Lambda-FF9900?style=for-the-badge&logo=awslambda&logoColor=white)
+![apigateway](https://img.shields.io/badge/API_Gateway-7142ce?style=for-the-badge&logo=amazonapigateway&logoColor=white)
 
 ## Dependencies
 - [Terraform](https://developer.hashicorp.com/terraform/install?product_intent=terraform)
