@@ -118,7 +118,7 @@ exports.handler = async (event, context) => {
       }
     }
 
-    const email = $row[0]['email'] 
+    const email = rows[0]['email'] 
 
     try {
       const tt = await signUp({ email, cpf, userPool })
