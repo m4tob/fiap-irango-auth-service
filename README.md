@@ -5,6 +5,9 @@
 ![lambda](https://img.shields.io/badge/AWS_Lambda-FF9900?style=for-the-badge&logo=awslambda&logoColor=white)
 ![apigateway](https://img.shields.io/badge/API_Gateway-7142ce?style=for-the-badge&logo=amazonapigateway&logoColor=white)
 
+## Architecture Diagram:
+![Architecture diagram](./docs/fiap-irango-auth-service.png)
+
 ## Dependencies
 - [Terraform](https://developer.hashicorp.com/terraform/install?product_intent=terraform)
 - Make
