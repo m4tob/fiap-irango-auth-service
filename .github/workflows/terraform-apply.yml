@@ -5,9 +5,10 @@ on:
 
   push:
     branches:
-    - main
+      - main
     paths:
-    - terraform/**
+      - src/**
+      - terraform/**
 
 env:
   TF_LOG: INFO
