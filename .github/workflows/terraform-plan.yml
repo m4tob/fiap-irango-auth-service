@@ -4,6 +4,9 @@ on:
   pull_request:
     branches:
       - main
+    paths:
+      - src/**
+      - terraform/**
 
 permissions:
   pull-requests: write
